@@ -92,6 +92,6 @@ module.exports = new (function(){
 			"base64"
 		);
 
-		return path + '?' + _queryString +'&oauth_signature='+encode( query.oauth_signature );
+		return {url: (path + '?' + _queryString), signature: encode( query.oauth_signature ) };
 	};
 });

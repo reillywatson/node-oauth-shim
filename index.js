@@ -329,7 +329,7 @@ module.exports = new (function(){
 			//
 			var token = p.access_token.match(/^([^:]+)\:([^@]+)@(.+)$/);
 			var path = p.path;
-
+			var signature = null;
 
 			// errr
 			var buffer = proxy.buffer(req);
@@ -337,10 +337,12 @@ module.exports = new (function(){
 			self.getCredentials( token[3], function(client_secret){
 
 				if(client_secret){
-					path = oauth.sign( p.path, {
+					var result = oauth.sign( p.path, {
 						oauth_token: token[1],
 						oauth_consumer_key : token[3]
 					}, client_secret, token[2], null, (p.method||req.method).toUpperCase(), p.data?JSON.parse(p.data):null);
+					path = result.url;
+					signature = result.signature;
 				}
 
 				// Define Default Handler
@@ -376,6 +378,9 @@ module.exports = new (function(){
 				else{
 					var options = url.parse(path);
 					options.method = p.method ? p.method.toUpperCase() : req.method;
+					if (signature) {
+						options.headers["Authorizaton"] = "Oauth: " + signature;
+					}
 
 					//
 					// Proxy
@@ -579,7 +584,7 @@ module.exports = new (function(){
 			if(!client_secret){
 				callback( p.redirect_uri, {
 					error : "invalid_credentials",
-					error_message : "Credientials were not recognised",
+					error_message : "Credentials were not recognised",
 					state : p.state || ''
 				});
 				return;
@@ -742,7 +747,7 @@ module.exports = new (function(){
 			else {
 				var o = s;
 				encode = encode || encodeURIComponent;
-			
+
 				a = [];
 
 				for( var x in o ){if(o.hasOwnProperty(x)){
@@ -854,7 +859,7 @@ module.exports = new (function(){
 				t = null, // tag
 				m = null, // match
 				x = null;
-			
+
 			// define x
 			for(x in o){if(o.hasOwnProperty(x)){
 				break;
@@ -884,7 +889,7 @@ module.exports = new (function(){
 				){
 					p[x] = args[i++];
 				}
-				
+
 				else if( typeof( m ) === 'string' && m.indexOf('!') > -1 ){
 					this.log("Whoops! " + x + " not defined");
 					return false;
