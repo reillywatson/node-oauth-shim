@@ -379,6 +379,9 @@ module.exports = new (function(){
 					var options = url.parse(path);
 					options.method = p.method ? p.method.toUpperCase() : req.method;
 					if (signature) {
+						if (!option.headers) {
+							option.headers = {};
+						}
 						options.headers["Authorizaton"] = "Oauth: " + signature;
 					}
 
@@ -596,6 +599,9 @@ module.exports = new (function(){
 
 			// Requst
 			var r = url.parse(signed_url);
+			if (!r.headers) {
+				r.headers = {}
+			}
 			r.headers["Authorization"] = "Oauth: " + signature.signature;
 
 			self.utils.log("OAUTH-REQUEST-URL", signed_url);
