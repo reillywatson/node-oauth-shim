@@ -591,10 +591,12 @@ module.exports = new (function(){
 			}
 
 			// Sign the request using the application credentials
-			var signed_url = oauth.sign( path, opts, client_secret, token_secret || null);
+			var signature = oauth.sign( path, opts, client_secret, token_secret || null);
+			var signed_url = signature.url;
 
 			// Requst
 			var r = url.parse(signed_url);
+			r.headers["Authorization"] = "Oauth: " + signature.signature;
 
 			self.utils.log("OAUTH-REQUEST-URL", signed_url);
 
