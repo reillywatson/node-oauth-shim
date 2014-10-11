@@ -379,10 +379,10 @@ module.exports = new (function(){
 					var options = url.parse(path);
 					options.method = p.method ? p.method.toUpperCase() : req.method;
 					if (signature) {
-						if (!option.headers) {
-							option.headers = {};
+						if (!options.headers) {
+							options.headers = {};
 						}
-						options.headers["Authorizaton"] = "Oauth: " + signature;
+						options.headers["Authorizaton"] = "Oauth " + signature;
 					}
 
 					//
@@ -597,12 +597,12 @@ module.exports = new (function(){
 			var signature = oauth.sign( path, opts, client_secret, token_secret || null);
 			var signed_url = signature.url;
 
-			// Requst
+			// Request
 			var r = url.parse(signed_url);
 			if (!r.headers) {
 				r.headers = {}
 			}
-			r.headers["Authorization"] = "Oauth: " + signature.signature;
+			r.headers["Authorization"] = "OAuth " + signature.signature;
 
 			self.utils.log("OAUTH-REQUEST-URL", signed_url);
 
