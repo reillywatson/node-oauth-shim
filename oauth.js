@@ -40,6 +40,37 @@ function encode(s){
                  .replace(/\*/g, "%2A");
 }
 
+// Is the parameter considered an OAuth parameter
+function isParameterNameAnOAuthParameter(parameter) {
+  var m = parameter.match('^oauth_');
+  if( m && ( m[0] === "oauth_" ) ) {
+    return true;
+  }
+  else {
+    return false;
+  }
+};
+
+// build the OAuth request authorization header
+function buildAuthorizationHeaders(orderedParameters) {
+	var oauthParameterSeparator = ",";
+  var authHeader="OAuth ";
+  if( this._isEcho ) {
+    authHeader += 'realm="' + this._realm + '",';
+  }
+
+  for( var i= 0 ; i < orderedParameters.length; i++) {
+     // Whilst the all the parameters should be included within the signature, only the oauth_ arguments
+     // should appear within the authorization header.
+     if(isParameterNameAnOAuthParameter(orderedParameters[i][0]) ) {
+      authHeader+= "" + encode(orderedParameters[i][0])+"=\""+ encode(orderedParameters[i][1])+"\""+ oauthParameterSeparator;
+     }
+  }
+
+  authHeader= authHeader.substring(0, authHeader.length - oauthParameterSeparator.length);
+  return authHeader;
+}
+
 module.exports = new (function(){
 	this.sign =  function( uri, opts, consumer_secret, token_secret, nonce, method, data ){
 
@@ -83,7 +114,7 @@ module.exports = new (function(){
 		params = params.join('&');
 		_queryString = _queryString.join('&');
 
-		var http = [method || "GET", encode(path).replace(/\+/g," ").replace(/\%7E/g,'~'), encode(params).replace(/\+/g," ").replace(/\%7E/g,'~') ];
+		var http = [method || "GET", encode(path).replace(/\+/g," ").replace(/\%7E/g,'~'), encode(params.join('&')).replace(/\+/g," ").replace(/\%7E/g,'~') ];
 
 		// Create oauth_signature
 		query.oauth_signature = hashString(

@@ -382,7 +382,7 @@ module.exports = new (function(){
 						if (!options.headers) {
 							options.headers = {};
 						}
-						options.headers["Authorizaton"] = "Oauth " + signature;
+						options.headers["Authorizaton"] = signature;
 					}
 
 					//
@@ -602,7 +602,7 @@ module.exports = new (function(){
 			if (!r.headers) {
 				r.headers = {}
 			}
-			r.headers["Authorization"] = "OAuth " + signature.signature;
+			r.headers["Authorization"] = signature.signature;
 
 			self.utils.log("OAUTH-REQUEST-URL", signed_url);
 
