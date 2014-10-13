@@ -55,10 +55,6 @@ function isParameterNameAnOAuthParameter(parameter) {
 function buildAuthorizationHeaders(orderedParameters) {
 	var oauthParameterSeparator = ",";
   var authHeader="OAuth ";
-  if( this._isEcho ) {
-    authHeader += 'realm="' + this._realm + '",';
-  }
-
   for( var i= 0 ; i < orderedParameters.length; i++) {
      // Whilst the all the parameters should be included within the signature, only the oauth_ arguments
      // should appear within the authorization header.
@@ -101,10 +97,12 @@ module.exports = new (function(){
 		keys.sort();
 		var params = [],
 			_queryString = [];
+		var orderedParams = [];
 
 		keys.forEach(function(k){
 			if(query[k]){
 				params.push( k + "=" + encode(query[k]) );
+				orderedParams.push([k, query[k]]);
 				if( !data || !(k in data)){
 					_queryString.push( k + "=" + encode(query[k]) );
 				}
@@ -114,7 +112,7 @@ module.exports = new (function(){
 		params = params.join('&');
 		_queryString = _queryString.join('&');
 
-		var http = [method || "GET", encode(path).replace(/\+/g," ").replace(/\%7E/g,'~'), encode(params.join('&')).replace(/\+/g," ").replace(/\%7E/g,'~') ];
+		var http = [method || "GET", encode(path).replace(/\+/g," ").replace(/\%7E/g,'~'), encode(params).replace(/\+/g," ").replace(/\%7E/g,'~') ];
 
 		// Create oauth_signature
 		query.oauth_signature = hashString(
@@ -122,7 +120,12 @@ module.exports = new (function(){
 			http.join('&'),
 			"base64"
 		);
-
-		return {url: (path + '?' + _queryString), signature: encode( query.oauth_signature ) };
+		orderedParams.push(["oauth_signature", query.oauth_signature]);
+		orderedParams.sort(function(a,b) { return a[0] > b[0]; });
+		_queryString += '&oauth_signature='+encode( query.oauth_signature );
+		console.log("KEYS: ");
+		console.log(orderedParams);
+		console.log( buildAuthorizationHeaders(orderedParams));
+		return {url: (path + '?' + _queryString), signature: buildAuthorizationHeaders(orderedParams) };
 	};
 });
